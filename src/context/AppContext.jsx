@@ -23,6 +23,24 @@ export const defaultNotes = [
 ];
 
 const STORAGE_SAFE_LIMIT = 4 * 1024 * 1024;
+const BREAK_SECONDS = 10 * 60;
+const HEALTH_CHECK_SECONDS = 5 * 60;
+
+function notifyUser(title, body) {
+  if (!('Notification' in window)) {
+    window.alert(`${title}: ${body}`);
+    return;
+  }
+
+  const showNotification = () => new window.Notification(title, { body });
+  if (window.Notification.permission === 'granted') {
+    showNotification();
+  } else if (window.Notification.permission === 'default') {
+    window.Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') showNotification();
+    }).catch(() => undefined);
+  }
+}
 
 export function useLocalStorage(key, initialValue, migrate = (value) => value) {
   const [value, setValue] = useState(() => {
@@ -60,6 +78,10 @@ export function AppProvider({ children }) {
   const [view, setView] = useState(() => window.location.pathname.endsWith('note.html') ? 'notes' : 'workspace');
   const [activeTrack, setActiveTrack] = useState('linux-fundamentals');
   const [searchTerm, setSearchTerm] = useState('');
+  const [workDuration, setWorkDuration] = useState(1200);
+  const [secondsLeft, setSecondsLeft] = useState(1200);
+  const [isActive, setIsActive] = useState(false);
+  const [mode, setMode] = useState('work');
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
@@ -67,6 +89,40 @@ export function AppProvider({ children }) {
   const [remoteTracks, setRemoteTracks] = useState({});
   const [savedTracks, setSavedTracks] = useLocalStorage('onewhole-tracks', {});
   const trackCatalog = { ...tracks, ...remoteTracks, ...savedTracks };
+
+  useEffect(() => {
+    if (!isActive) {
+      return undefined;
+    }
+
+    const interval = window.setInterval(() => {
+      setSecondsLeft((remaining) => {
+        if (remaining > 1) return remaining - 1;
+
+        if (mode === 'work') {
+          notifyUser('Work session complete', 'Time for a 10-minute break.');
+          setMode('break');
+          return BREAK_SECONDS;
+        }
+
+        notifyUser('Break complete', 'Your next Work session is starting.');
+        setMode('work');
+        return workDuration;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [isActive, mode, workDuration]);
+
+  useEffect(() => {
+    if (!isActive || mode !== 'work') return undefined;
+
+    const interval = window.setInterval(() => {
+      notifyUser('Health Check', 'Take a sip of water and check your posture.');
+    }, HEALTH_CHECK_SECONDS * 1000);
+
+    return () => window.clearInterval(interval);
+  }, [isActive, mode]);
 
   useEffect(() => onAuthStateChanged(auth, (nextUser) => {
     setUser(nextUser);
@@ -125,6 +181,19 @@ export function AppProvider({ children }) {
   const goToWorkspace = () => setView('workspace');
   const goToNotes = () => setView('notes');
   const goToProfile = () => setView('profile');
+  const toggleTimer = () => setIsActive((active) => !active);
+  const resetTimer = () => {
+    setIsActive(false);
+    setMode('work');
+    setSecondsLeft(workDuration);
+  };
+  const setTimerDuration = (minutes) => {
+    const nextDuration = Math.min(180, Math.max(1, Number(minutes) || 20)) * 60;
+    setWorkDuration(nextDuration);
+    setMode('work');
+    setSecondsLeft(nextDuration);
+    setIsActive(false);
+  };
 
   return <AppContext.Provider value={{
     view,
@@ -133,6 +202,13 @@ export function AppProvider({ children }) {
     setActiveTrack,
     searchTerm,
     setSearchTerm,
+    secondsLeft,
+    isActive,
+    mode,
+    workDuration,
+    toggleTimer,
+    resetTimer,
+    setTimerDuration,
     user,
     authLoading,
     currentUser,

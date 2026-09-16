@@ -356,6 +356,132 @@ textarea:focus-visible,
     letter-spacing: 2px;
 }
 
+.health-break-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2600;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(3, 7, 18, 0.78);
+}
+
+.health-break-mini {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1800;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px 8px 12px;
+    background: rgba(11, 15, 25, 0.94);
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    border-radius: 7px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.health-break-mini-label {
+    color: #86efac;
+    font: 10px 'Courier New', monospace;
+    letter-spacing: 1px;
+}
+
+.health-break-mini strong {
+    color: #f8fafc;
+    font: 12px 'Courier New', monospace;
+}
+
+.health-break-mini button {
+    border: 0;
+    color: #00ff00;
+    background: transparent;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.health-break-mini button:hover,
+.health-break-mini button:focus-visible {
+    color: #fff;
+}
+
+.health-break-card {
+    width: min(100%, 430px);
+    padding: 32px;
+    text-align: center;
+    background: #111827;
+    border: 1px solid rgba(0, 255, 0, 0.45);
+    border-radius: 10px;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55), 0 0 30px rgba(0, 255, 0, 0.08);
+}
+
+.health-break-card h2 {
+    margin: 12px 0 8px;
+    color: #f8fafc;
+    font-size: 28px;
+}
+
+.health-break-card p {
+    color: #94a3b8;
+    font: 15px 'Electrolize', sans-serif;
+}
+
+.health-break-reset-btn {
+    margin-top: 24px;
+    padding: 11px 14px;
+    border: 1px solid #00ff00;
+    border-radius: 6px;
+    background: rgba(0, 255, 0, 0.1);
+    color: #00ff00;
+    font: 11px 'Courier New', monospace;
+    cursor: pointer;
+}
+
+.health-break-reset-btn:hover,
+.health-break-reset-btn:focus-visible {
+    background: rgba(0, 255, 0, 0.22);
+}
+
+.floating-timer {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px 9px 12px;
+    background: rgba(11, 15, 25, 0.95);
+    border: 1px solid rgba(0, 255, 0, 0.35);
+    border-radius: 7px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    font-family: 'Courier New', monospace;
+}
+
+.floating-timer-mode {
+    color: #86efac;
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.floating-timer strong {
+    color: #f8fafc;
+    font-size: 13px;
+}
+
+.floating-timer button {
+    border: 0;
+    color: #00ff00;
+    background: transparent;
+    cursor: pointer;
+    font: 14px 'Courier New', monospace;
+}
+
+.floating-timer button:hover,
+.floating-timer button:focus-visible {
+    color: #fff;
+}
+
 .landing-page {
     min-height: 100vh;
     display: grid;

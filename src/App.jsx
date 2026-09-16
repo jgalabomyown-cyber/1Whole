@@ -8,6 +8,7 @@ import NotebookManager, { RichTextEditor } from './components/RichNotebookManage
 import Icon from './components/Icon.jsx';
 import LandingPage from './components/LandingPage.jsx';
 import ProfilePage from './components/ProfilePage.jsx';
+import FloatingTimer from './components/FloatingTimer.jsx';
 
 function AppShell() {
   const { view, user, authLoading } = useAppContext();
@@ -27,6 +28,7 @@ function AppShell() {
     {view === 'workspace' && <><Timer /><Workspace onOpenScratch={() => setScratchpad(true)} /></>}
     {view === 'notes' && <NotebookManager />}
     {view === 'profile' && <ProfilePage />}
+    {view !== 'workspace' && <FloatingTimer />}
     {scratchpad && <div className="notebook-modal-overlay show" onClick={(event) => event.target === event.currentTarget && setScratchpad(false)}><div className="notebook-modal"><div className="modal-header"><div className="modal-title"><Icon name="journal-text" /> OPERATIONAL_JOURNAL.md</div><button className="close-modal-btn" aria-label="Close operational journal" onClick={() => setScratchpad(false)}>×</button></div><div className="modal-body"><RichTextEditor value={scratch} onChange={setScratch} /></div></div></div>}
   </>;
 }
