@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, updateProfile } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { auth, db } from '../firebase.js';
 
@@ -83,7 +83,14 @@ export function AppProvider({ children }) {
     let cancelled = false;
     getDoc(doc(db, 'users', currentUser.uid))
       .then((snapshot) => {
-        if (!cancelled) setUserProfile(snapshot.exists() ? snapshot.data() : null);
+        if (cancelled) return;
+        const profile = snapshot.exists() ? snapshot.data() : null;
+        setUserProfile(profile);
+        if (!currentUser.displayName && profile?.alias) {
+          updateProfile(currentUser, { displayName: profile.alias }).catch((err) => {
+            console.warn('[Firebase] Failed to sync profile alias:', err);
+          });
+        }
       })
       .catch((err) => console.warn('[Firebase] Failed to load user profile:', err));
 
@@ -117,6 +124,7 @@ export function AppProvider({ children }) {
 
   const goToWorkspace = () => setView('workspace');
   const goToNotes = () => setView('notes');
+  const goToProfile = () => setView('profile');
 
   return <AppContext.Provider value={{
     view,
@@ -132,7 +140,8 @@ export function AppProvider({ children }) {
     trackCatalog,
     updateTrackCatalog,
     goToWorkspace,
-    goToNotes
+    goToNotes,
+    goToProfile
   }}>
     {children}
   </AppContext.Provider>;

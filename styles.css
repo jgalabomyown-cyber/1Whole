@@ -386,6 +386,11 @@ textarea:focus-visible,
 .auth-submit-btn { margin-top: 6px; padding: 12px; border: 1px solid #00ff00; border-radius: 6px; background: rgba(0, 255, 0, 0.12); color: #00ff00; font: 12px 'Courier New', monospace; cursor: pointer; }
 .auth-submit-btn:hover:not(:disabled) { background: rgba(0, 255, 0, 0.24); }
 .auth-submit-btn:disabled { cursor: wait; opacity: 0.6; }
+.auth-divider { display: flex; align-items: center; gap: 10px; color: #475569; font: 10px 'Courier New', monospace; }
+.auth-divider::before, .auth-divider::after { content: ''; height: 1px; flex: 1; background: rgba(148, 163, 184, 0.2); }
+.google-auth-btn { padding: 11px; border: 1px solid rgba(148, 163, 184, 0.35); border-radius: 6px; background: rgba(148, 163, 184, 0.08); color: #e2e8f0; font: 11px 'Courier New', monospace; cursor: pointer; }
+.google-auth-btn:hover:not(:disabled) { border-color: #fff; background: rgba(255, 255, 255, 0.14); color: #fff; }
+.google-auth-btn:disabled { cursor: wait; opacity: 0.6; }
 .auth-switch-btn { border: 0; background: transparent; color: #7dd3fc; font: 11px 'Courier New', monospace; cursor: pointer; }
 .auth-switch-btn:hover { color: #bae6fd; }
 .auth-error { padding: 9px; border: 1px solid rgba(248, 113, 113, 0.4); border-radius: 5px; background: rgba(127, 29, 29, 0.18); color: #fca5a5; font: 11px/1.4 'Courier New', monospace; }
@@ -998,6 +1003,18 @@ textarea:focus-visible,
 }
 .notebook-modal-textarea:focus { outline: none; }
 
+.profile-page { margin: clamp(30px, 5vw, 50px) clamp(12px, 3vw, 20px) 20px; }
+.profile-page-shell { width: min(100%, 900px); margin: 0 auto; padding: 24px; background: rgba(11,15,25,.72); border: 1px solid rgba(148,163,184,.14); border-radius: 10px; }
+.profile-page-shell > .back-to-workspace-btn { margin-bottom: 34px; }
+.profile-page-heading { display: flex; align-items: center; gap: 16px; margin: 16px 0 30px; }
+.profile-page-avatar { width: 64px; height: 64px; }
+.profile-page-heading h1 { color: #f8fafc; font-size: clamp(24px, 4vw, 38px); }
+.profile-page-heading p { margin-top: 5px; color: #94a3b8; font: 12px 'Courier New', monospace; }
+.profile-details-panel { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding-top: 22px; border-top: 1px solid rgba(148,163,184,.14); }
+.profile-details-panel > div { display: grid; gap: 8px; }
+.profile-field-label { color: #00ff00; font: 10px 'Courier New', monospace; }
+.profile-details-panel strong { color: #cbd5e1; font: 13px 'Courier New', monospace; overflow-wrap: anywhere; }
+
 .logo-mobile { display: none; }
 .notebooks-page { margin: clamp(30px, 5vw, 50px) clamp(12px, 3vw, 20px) 20px; }
 .notebooks-shell { width: min(100%, 900px); margin: 0 auto; }
@@ -1488,7 +1505,16 @@ textarea:focus-visible,
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
     overflow-y: auto; /* Ensures seamless scrolling as more modules are added */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    height: 100vh;
+    overflow-y: hidden;
+}
+
+.sidebar-tray::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, and Opera */
 }
 
 .sidebar-tray.open {
@@ -1536,6 +1562,12 @@ textarea:focus-visible,
     display: flex;
     flex-direction: column;
     gap: 4px;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0, 255, 0, 0.16);
 }
 
 .group-banner {

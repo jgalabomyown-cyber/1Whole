@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
 import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase.js';
 
@@ -11,6 +11,25 @@ function AuthForm({ mode, onModeChange }) {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setSubmitting(true);
+
+    try {
+      const credential = await signInWithPopup(auth, new GoogleAuthProvider());
+      const googleUser = credential.user;
+      await setDoc(doc(db, 'users', googleUser.uid), {
+        alias: googleUser.displayName || googleUser.email?.split('@')[0] || 'Guest',
+        email: googleUser.email,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    } catch (err) {
+      setError(formatAuthError(err));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const submit = async (event) => {
     event.preventDefault();
     setError('');
@@ -19,8 +38,10 @@ function AuthForm({ mode, onModeChange }) {
     try {
       if (isSignup) {
         const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+        const registeredAlias = alias.trim() || email.split('@')[0];
+        await updateProfile(credential.user, { displayName: registeredAlias });
         await setDoc(doc(db, 'users', credential.user.uid), {
-          alias: alias.trim() || email.split('@')[0],
+          alias: registeredAlias,
           email: credential.user.email,
           createdAt: serverTimestamp()
         });
@@ -44,6 +65,8 @@ function AuthForm({ mode, onModeChange }) {
     <label>Password<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="At least 6 characters" autoComplete={isSignup ? 'new-password' : 'current-password'} minLength="6" required /></label>
     {error && <p className="auth-error" role="alert">{error}</p>}
     <button className="auth-submit-btn" type="submit" disabled={submitting}>{submitting ? 'PROCESSING...' : isSignup ? 'CREATE ACCOUNT' : 'ENTER WORKSPACE'}</button>
+    <div className="auth-divider"><span>OR</span></div>
+    <button className="google-auth-btn" type="button" onClick={handleGoogleSignIn} disabled={submitting}>CONTINUE WITH GOOGLE</button>
     <button className="auth-switch-btn" type="button" onClick={() => { setError(''); onModeChange(isSignup ? 'login' : 'signup'); }}>
       {isSignup ? 'Already have an account? Log in' : 'Need an account? Sign up'}
     </button>
