@@ -1,4 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
+import { auth, db } from '../firebase.js';
 
 export const tracks = {
   'linux-fundamentals': {
@@ -57,8 +60,52 @@ export function AppProvider({ children }) {
   const [view, setView] = useState(() => window.location.pathname.endsWith('note.html') ? 'notes' : 'workspace');
   const [activeTrack, setActiveTrack] = useState('linux-fundamentals');
   const [searchTerm, setSearchTerm] = useState('');
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  const [remoteTracks, setRemoteTracks] = useState({});
   const [savedTracks, setSavedTracks] = useLocalStorage('onewhole-tracks', {});
-  const trackCatalog = { ...tracks, ...savedTracks };
+  const trackCatalog = { ...tracks, ...remoteTracks, ...savedTracks };
+
+  useEffect(() => onAuthStateChanged(auth, (nextUser) => {
+    setUser(nextUser);
+    setCurrentUser(nextUser);
+    setAuthLoading(false);
+  }), []);
+
+  useEffect(() => {
+    if (!currentUser) {
+      setUserProfile(null);
+      return undefined;
+    }
+
+    let cancelled = false;
+    getDoc(doc(db, 'users', currentUser.uid))
+      .then((snapshot) => {
+        if (!cancelled) setUserProfile(snapshot.exists() ? snapshot.data() : null);
+      })
+      .catch((err) => console.warn('[Firebase] Failed to load user profile:', err));
+
+    return () => { cancelled = true; };
+  }, [currentUser]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getDocs(collection(db, 'tracks'))
+      .then((snapshot) => {
+        if (cancelled) return;
+        const nextTracks = {};
+        snapshot.forEach((item) => {
+          const track = item.data();
+          nextTracks[track.id || item.id] = track;
+        });
+        setRemoteTracks(nextTracks);
+      })
+      .catch((err) => console.warn('[Firebase] Failed to load tracks:', err));
+
+    return () => { cancelled = true; };
+  }, []);
 
   const updateTrackCatalog = (update) => {
     setSavedTracks((saved) => {
@@ -78,6 +125,10 @@ export function AppProvider({ children }) {
     setActiveTrack,
     searchTerm,
     setSearchTerm,
+    user,
+    authLoading,
+    currentUser,
+    userProfile,
     trackCatalog,
     updateTrackCatalog,
     goToWorkspace,

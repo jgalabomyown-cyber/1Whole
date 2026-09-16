@@ -6,12 +6,19 @@ import Timer from './components/Timer.jsx';
 import Workspace from './components/Workspace.jsx';
 import NotebookManager, { RichTextEditor } from './components/RichNotebookManager.jsx';
 import Icon from './components/Icon.jsx';
+import LandingPage from './components/LandingPage.jsx';
 
 function AppShell() {
-  const { view } = useAppContext();
+  const { view, user, authLoading } = useAppContext();
   const [sidebar, setSidebar] = useState(false);
   const [scratchpad, setScratchpad] = useState(false);
   const [scratch, setScratch] = useLocalStorage('onewhole-notebook', '');
+
+  if (authLoading) {
+    return <main className="auth-loading" aria-live="polite">AUTHENTICATING...</main>;
+  }
+
+  if (!user) return <LandingPage />;
 
   return <>
     <Header onSidebar={() => setSidebar(true)} />

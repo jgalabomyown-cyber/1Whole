@@ -1,0 +1,5 @@
+.env
+.env.local
+firebase-config.js (or wherever your keys are)
+node_modules/
+dist/
