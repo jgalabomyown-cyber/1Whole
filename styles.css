@@ -356,6 +356,16 @@ textarea:focus-visible,
     letter-spacing: 2px;
 }
 
+.workspace-transition {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    color: #00ff00;
+    background: #0b0f19;
+    font: 12px 'Courier New', monospace;
+    letter-spacing: 2px;
+}
+
 .health-break-overlay {
     position: fixed;
     inset: 0;
@@ -1069,6 +1079,208 @@ textarea:focus-visible,
     background: rgba(0, 255, 0, 0.05);
 }
 
+.cyber-workspace-grid > .floating-notebook-fab {
+    display: none;
+}
+
+.floating-notebook {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    z-index: 1800;
+}
+
+.floating-notebook .floating-notebook-fab {
+    position: static;
+}
+
+.floating-notebook-menu {
+    position: absolute;
+    right: 0;
+    bottom: 68px;
+    width: min(360px, calc(100vw - 32px));
+    max-height: min(520px, calc(100vh - 120px));
+    overflow-y: auto;
+    padding: 14px;
+    background: #0b0f19;
+    border: 1px solid rgba(0, 255, 0, 0.32);
+    border-radius: 9px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+.floating-notebook-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.floating-notebook-header div {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+}
+
+.floating-notebook-header strong {
+    color: #f8fafc;
+    font: 12px 'Courier New', monospace;
+    overflow-wrap: anywhere;
+}
+
+.floating-notebook-header > button,
+.floating-note-item > button {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    border-radius: 5px;
+    background: transparent;
+    color: #00ff00;
+    cursor: pointer;
+}
+
+.floating-note-actions {
+    display: flex;
+    gap: 5px;
+    flex: 0 0 auto;
+}
+
+.floating-note-actions button:hover,
+.floating-notebook-header > button:hover,
+.floating-note-actions button:focus-visible,
+.floating-notebook-header > button:focus-visible {
+    background: rgba(0, 255, 0, 0.1);
+}
+
+.floating-note-form {
+    display: grid;
+    gap: 7px;
+    padding: 12px 0;
+}
+
+.floating-note-form input,
+.floating-note-form textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 8px;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    border-radius: 5px;
+    background: #060911;
+    color: #e2e8f0;
+    font: 11px 'Courier New', monospace;
+    resize: vertical;
+}
+
+.floating-note-form button {
+    padding: 8px;
+    border: 1px solid rgba(0, 255, 0, 0.4);
+    border-radius: 5px;
+    background: rgba(0, 255, 0, 0.08);
+    color: #00ff00;
+    font: 10px 'Courier New', monospace;
+    cursor: pointer;
+}
+
+.floating-note-list {
+    display: grid;
+    gap: 8px;
+    padding-top: 12px;
+}
+
+.floating-note-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.14);
+    border-radius: 6px;
+    background: rgba(15, 23, 42, 0.55);
+}
+
+.floating-note-edit {
+    color: #60a5fa !important;
+}
+
+.floating-note-delete {
+    color: #f87171 !important;
+}
+
+.floating-note-edit:hover,
+.floating-note-edit:focus-visible {
+    border-color: #60a5fa !important;
+    background: rgba(96, 165, 250, 0.14) !important;
+}
+
+.floating-note-delete:hover,
+.floating-note-delete:focus-visible {
+    border-color: #f87171 !important;
+    background: rgba(248, 113, 113, 0.14) !important;
+}
+
+.floating-note-item div {
+    min-width: 0;
+}
+
+.floating-note-item strong {
+    color: #f8fafc;
+    font: 12px 'Electrolize', sans-serif;
+}
+
+.floating-note-item p {
+    margin-top: 5px;
+    color: #94a3b8;
+.floating-note-item > strong {
+    min-width: 0;
+    flex: 1;
+    color: #f8fafc;
+    font: 12px 'Electrolize', sans-serif;
+    overflow-wrap: anywhere;
+}
+    font: 11px/1.4 'Electrolize', sans-serif;
+    overflow-wrap: anywhere;
+}
+.floating-note-actions button {
+    width: 30px;
+    height: 30px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.floating-note-edit {
+    border: 1px solid rgba(96, 165, 250, 0.5);
+    color: #93c5fd;
+    background: rgba(96, 165, 250, 0.1);
+}
+
+.floating-note-delete {
+    border: 1px solid rgba(248, 113, 113, 0.5);
+    color: #fca5a5;
+    background: rgba(127, 29, 29, 0.16);
+}
+
+.floating-note-edit:hover,
+.floating-note-edit:focus-visible {
+    background: rgba(96, 165, 250, 0.25);
+    color: #fff;
+}
+
+.floating-note-delete:hover,
+.floating-note-delete:focus-visible {
+    background: rgba(127, 29, 29, 0.35);
+    color: #fff;
+}
+
+.floating-note-empty {
+    padding: 12px 0;
+    color: #64748b;
+    font: 11px 'Courier New', monospace;
+}
+
 /* OVERLAY MODAL CANVAS INTERFACE LAYER STRUCTURE RULES */
 .notebook-modal-overlay {
     display: none; /* Hidden by default toggled through javascript class maps rules definitions */
@@ -1141,9 +1353,24 @@ textarea:focus-visible,
 .profile-field-label { color: #00ff00; font: 10px 'Courier New', monospace; }
 .profile-details-panel strong { color: #cbd5e1; font: 13px 'Courier New', monospace; overflow-wrap: anywhere; }
 
+.workspaces-page { margin: clamp(30px, 5vw, 50px) clamp(12px, 3vw, 20px) 20px; }
+.workspaces-shell { width: min(100%, 900px); margin: 0 auto; }
+.workspaces-shell h1 { margin: 6px 0; color: #f8fafc; font-size: clamp(28px, 4vw, 42px); }
+.workspaces-intro { margin-bottom: 24px; color: #94a3b8; font: 13px 'Electrolize', sans-serif; }
+.workspace-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; }
+.workspace-card { position: relative; display: flex; align-items: flex-start; gap: 14px; min-width: 0; padding: 18px; border: 1px solid rgba(148,163,184,.16); border-radius: 9px; background: rgba(11,15,25,.72); color: #cbd5e1; text-align: left; cursor: pointer; transition: border-color .2s, background .2s, transform .2s; }
+.workspace-card:hover, .workspace-card:focus-visible { border-color: rgba(0,255,0,.5); background: rgba(0,255,0,.06); transform: translateY(-2px); outline: none; }
+.workspace-card.active { border-color: rgba(0,255,0,.4); background: rgba(0,255,0,.08); }
+.workspace-card-icon { display: grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; border: 1px solid rgba(0,255,0,.3); border-radius: 6px; color: #00ff00; }
+.workspace-card-content { display: grid; min-width: 0; gap: 5px; }
+.workspace-card-content strong { color: #f8fafc; font: 15px 'Electrolize', sans-serif; }
+.workspace-card-content span { color: #86efac; font: 10px 'Courier New', monospace; overflow-wrap: anywhere; }
+.workspace-card-content small { color: #94a3b8; font: 11px/1.45 'Electrolize', sans-serif; }
+.workspace-card-status { position: absolute; top: 12px; right: 12px; color: #00ff00; font: 9px 'Courier New', monospace; }
+
 .logo-mobile { display: none; }
-.notebooks-page { margin: clamp(30px, 5vw, 50px) clamp(12px, 3vw, 20px) 20px; }
-.notebooks-shell { width: min(100%, 900px); margin: 0 auto; }
+.notebooks-page { margin: clamp(24px, 3vw, 34px) clamp(12px, 2vw, 20px) 20px; }
+.notebooks-shell { width: min(100%, 1080px); margin: 0 auto; }
 .notebooks-page-header, .notebook-manager-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
 .notebooks-page-header { margin-bottom: 20px; }
 .notebooks-page-header h2 { color: #f8fafc; font-size: clamp(24px, 3vw, 36px); margin: 5px 0; }
@@ -1773,6 +2000,11 @@ textarea:focus-visible,
         z-index: 2000;
     }
 
+    .floating-notebook {
+        right: var(--fab-edge);
+        bottom: var(--fab-edge);
+    }
+
     .ai-terminal-pane {
         position: fixed;
         top: 50%;
@@ -1842,5 +2074,12 @@ textarea:focus-visible,
     .floating-notebook-fab {
         right: var(--fab-edge);
         bottom: var(--fab-edge);
+    }
+
+    .floating-notebook-menu {
+        right: -4px;
+        bottom: 66px;
+        width: min(340px, calc(100vw - 28px));
+        max-height: min(430px, calc(100vh - 150px));
     }
 }

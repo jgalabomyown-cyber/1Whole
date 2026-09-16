@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Icon from './Icon.jsx';
 import { tracks, useAppContext } from '../context/AppContext.jsx';
+import FloatingNotebook from './FloatingNotebook.jsx';
 
 function AiTerminal({ open, onToggle }) {
   const [chatHistory, setChatHistory] = useState([{ id: 'system', role: 'system', text: '> AI Core online. Standing by for payload syntax breakdown...' }]);
@@ -29,8 +30,9 @@ function AiTerminal({ open, onToggle }) {
   </>;
 }
 
-export default function Workspace({ onOpenScratch }) {
+export default function Workspace() {
   const { activeTrack, trackCatalog } = useAppContext();
+  const onOpenScratch = () => {};
   const [url, setUrl] = useState('');
   const [text, setText] = useState('');
   const [mediaUrl, setMediaUrl] = useState('');

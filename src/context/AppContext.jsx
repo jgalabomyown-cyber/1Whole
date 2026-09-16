@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { onAuthStateChanged, updateProfile } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { auth, db } from '../firebase.js';
@@ -25,6 +25,15 @@ export const defaultNotes = [
 const STORAGE_SAFE_LIMIT = 4 * 1024 * 1024;
 const BREAK_SECONDS = 10 * 60;
 const HEALTH_CHECK_SECONDS = 5 * 60;
+
+function readRoute(pathname) {
+  const workspaceMatch = pathname.match(/^\/workspace\/([^/]+)/);
+  if (workspaceMatch) return { view: 'workspace', workspaceId: decodeURIComponent(workspaceMatch[1]) };
+  if (pathname.endsWith('note.html') || pathname === '/notes') return { view: 'notes', workspaceId: null };
+  if (pathname === '/workspaces') return { view: 'workspaces', workspaceId: null };
+  if (pathname === '/profile') return { view: 'profile', workspaceId: null };
+  return { view: 'workspace', workspaceId: 'linux-fundamentals' };
+}
 
 function notifyUser(title, body) {
   if (!('Notification' in window)) {
@@ -75,13 +84,22 @@ export function useLocalStorage(key, initialValue, migrate = (value) => value) {
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
-  const [view, setView] = useState(() => window.location.pathname.endsWith('note.html') ? 'notes' : 'workspace');
-  const [activeTrack, setActiveTrack] = useState('linux-fundamentals');
+  const [route, setRoute] = useState(() => readRoute(window.location.pathname));
+  const [view, setView] = useState(() => readRoute(window.location.pathname).view);
+  const [currentWorkspace, setCurrentWorkspace] = useState(() => readRoute(window.location.pathname).workspaceId || 'linux-fundamentals');
+  const [workspaceLoading, setWorkspaceLoading] = useState(false);
+  const [activeTrack, setActiveTrack] = useState(() => readRoute(window.location.pathname).workspaceId || 'linux-fundamentals');
   const [searchTerm, setSearchTerm] = useState('');
-  const [workDuration, setWorkDuration] = useState(1200);
-  const [secondsLeft, setSecondsLeft] = useState(1200);
-  const [isActive, setIsActive] = useState(false);
-  const [mode, setMode] = useState('work');
+  const [workspaceData, setWorkspaceData] = useLocalStorage('onewhole-workspaces', {});
+  const [workspaceNotes, setWorkspaceNotes] = useLocalStorage('workspace_notes', {});
+  const [legacyNotes, setLegacyNotes] = useLocalStorage('onewhole-notebooks', []);
+  const workspaceSnapshot = workspaceData[currentWorkspace] || {};
+  const [scratch, setScratch] = useState(workspaceSnapshot.scratch || '');
+  const [workDuration, setWorkDuration] = useState(workspaceSnapshot.workDuration || 1200);
+  const [secondsLeft, setSecondsLeft] = useState(workspaceSnapshot.secondsLeft || workspaceSnapshot.workDuration || 1200);
+  const [isActive, setIsActive] = useState(Boolean(workspaceSnapshot.isActive));
+  const [mode, setMode] = useState(workspaceSnapshot.mode || 'work');
+  const workspaceStateRef = useRef({ scratch, workDuration, secondsLeft, isActive, mode });
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
@@ -89,6 +107,60 @@ export function AppProvider({ children }) {
   const [remoteTracks, setRemoteTracks] = useState({});
   const [savedTracks, setSavedTracks] = useLocalStorage('onewhole-tracks', {});
   const trackCatalog = { ...tracks, ...remoteTracks, ...savedTracks };
+  const currentWorkspaceNotes = [
+    ...(workspaceNotes[currentWorkspace] || []),
+    ...(Array.isArray(legacyNotes) ? legacyNotes.filter((note) => note?.track === currentWorkspace) : [])
+  ].filter((note, index, notes) => notes.findIndex((item) => item.id === note.id) === index);
+  workspaceStateRef.current = { scratch, workDuration, secondsLeft, isActive, mode };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      saveWorkspaceSnapshot();
+      const nextRoute = readRoute(window.location.pathname);
+      setRoute(nextRoute);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  useEffect(() => {
+    if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+      window.history.replaceState({}, '', `/workspace/${encodeURIComponent(currentWorkspace)}`);
+    }
+  }, []);
+
+  useEffect(() => {
+    setView(route.view);
+    if (route.workspaceId) {
+      if (route.workspaceId !== currentWorkspace) setWorkspaceLoading(true);
+      setCurrentWorkspace(route.workspaceId);
+      setActiveTrack(route.workspaceId);
+    }
+  }, [route, currentWorkspace]);
+
+  useEffect(() => {
+    if (!currentWorkspace) return;
+    const snapshot = workspaceData[currentWorkspace] || {};
+    setScratch(snapshot.scratch || '');
+    setWorkDuration(snapshot.workDuration || 1200);
+    setSecondsLeft(snapshot.secondsLeft || snapshot.workDuration || 1200);
+    setIsActive(Boolean(snapshot.isActive));
+    setMode(snapshot.mode || 'work');
+    setWorkspaceLoading(false);
+  }, [currentWorkspace]);
+
+  const saveWorkspaceSnapshot = (workspaceId = currentWorkspace) => {
+    if (!workspaceId) return;
+    setWorkspaceData((items) => ({
+      ...items,
+      [workspaceId]: workspaceStateRef.current
+    }));
+  };
+
+  const navigate = (path) => {
+    window.history.pushState({}, '', path);
+    setRoute(readRoute(path));
+  };
 
   useEffect(() => {
     if (!isActive) {
@@ -178,9 +250,15 @@ export function AppProvider({ children }) {
     });
   };
 
-  const goToWorkspace = () => setView('workspace');
-  const goToNotes = () => setView('notes');
-  const goToProfile = () => setView('profile');
+  const switchWorkspace = (workspaceId) => {
+    if (!workspaceId || (workspaceId === currentWorkspace && view === 'workspace')) return;
+    saveWorkspaceSnapshot();
+    navigate(`/workspace/${encodeURIComponent(workspaceId)}`);
+  };
+  const goToWorkspace = () => navigate(`/workspace/${encodeURIComponent(currentWorkspace)}`);
+  const goToWorkspaces = () => { saveWorkspaceSnapshot(); navigate('/workspaces'); };
+  const goToNotes = () => { saveWorkspaceSnapshot(); navigate('/notes'); };
+  const goToProfile = () => { saveWorkspaceSnapshot(); navigate('/profile'); };
   const toggleTimer = () => setIsActive((active) => !active);
   const resetTimer = () => {
     setIsActive(false);
@@ -194,14 +272,63 @@ export function AppProvider({ children }) {
     setSecondsLeft(nextDuration);
     setIsActive(false);
   };
+  const updateScratch = (value) => {
+    setScratch(value);
+    setWorkspaceData((items) => ({ ...items, [currentWorkspace]: { ...(items[currentWorkspace] || {}), scratch: value } }));
+  };
+
+  const addWorkspaceNote = ({ title, content }) => {
+    const note = {
+      id: `workspace-note-${Date.now()}`,
+      title: title.trim(),
+      content: content.trim(),
+      workspaceId: currentWorkspace,
+      createdAt: new Date().toISOString()
+    };
+    setWorkspaceNotes((items) => ({
+      ...items,
+      [currentWorkspace]: [...(items[currentWorkspace] || []), note]
+    }));
+  };
+
+  const removeWorkspaceNote = (noteId) => {
+    setWorkspaceNotes((items) => ({
+      ...items,
+      [currentWorkspace]: (items[currentWorkspace] || []).filter((note) => note.id !== noteId)
+    }));
+  };
+
+  const updateWorkspaceNote = (noteId, changes) => {
+    if ((workspaceNotes[currentWorkspace] || []).some((note) => note.id === noteId)) {
+      setWorkspaceNotes((items) => ({
+        ...items,
+        [currentWorkspace]: (items[currentWorkspace] || []).map((note) => note.id === noteId ? { ...note, ...changes } : note)
+      }));
+      return;
+    }
+
+    setLegacyNotes((items) => Array.isArray(items)
+      ? items.map((note) => note.id === noteId ? { ...note, ...changes } : note)
+      : items);
+  };
 
   return <AppContext.Provider value={{
     view,
     setView,
+    currentWorkspace,
+    currentWorkspaceId: currentWorkspace,
+    workspaceLoading,
+    switchWorkspace,
     activeTrack,
     setActiveTrack,
     searchTerm,
     setSearchTerm,
+    scratch,
+    setScratch: updateScratch,
+    workspaceNotes: currentWorkspaceNotes,
+    addWorkspaceNote,
+    removeWorkspaceNote,
+    updateWorkspaceNote,
     secondsLeft,
     isActive,
     mode,
@@ -216,6 +343,7 @@ export function AppProvider({ children }) {
     trackCatalog,
     updateTrackCatalog,
     goToWorkspace,
+    goToWorkspaces,
     goToNotes,
     goToProfile
   }}>
